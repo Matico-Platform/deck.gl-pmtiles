@@ -8,7 +8,7 @@ esbuild
     format:"esm",
     sourcemap:true,
     minify: false,
-    external: [...Object.keys(pkg.dependencies), ...Object.keys(pkg.peerDependencies)],
+    external: [...Object.keys(pkg.peerDependencies)],
     watch: true
   })
   .catch(() => process.exit(1));

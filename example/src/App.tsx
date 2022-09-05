@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { PMTLayer } from "../../src";
+import React, { useState } from "react";
+import { PMTLayer, PMTLoader } from "../../src";
 import "./App.css";
 import DeckGL from "@deck.gl/react/typed";
 import { BitmapLayer, GeoJsonLayer } from "@deck.gl/layers/typed";
@@ -17,7 +17,6 @@ import {
 // @ts-ignore
 import { ColorArea, ColorWheel } from "@react-spectrum/color";
 import { parseColor } from "@react-stately/color";
-
 const INITIAL_VIEW_STATE = {
   longitude: -87,
   latitude: 42,
@@ -158,7 +157,6 @@ export default function App() {
                 value={fill}
                 onChange={setFill}
                 size="size-1200"
-                label="Fill Color"
               />
             </Grid>
             <ColorWheel value={fill} onChange={setFill} size="size-2400" />
@@ -179,7 +177,6 @@ export default function App() {
                 value={border}
                 onChange={setBorder}
                 size="size-1200"
-                label="Fill Color"
               />
             </Grid>
             <ColorWheel value={border} onChange={setBorder} size="size-2400" />

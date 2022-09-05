@@ -2,8 +2,11 @@
   "name": "@maticoapp/deck.gl-pmtiles",
   "author": "Dylan Halpern",
   "packageManager": "yarn@3.2.2",
-  "browser": "dist/index.js",
-  "version": "0.0.1",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.mjs",
+  "entry": "./dist/index.mjs",
+  "version": "0.0.4",
   "license": "MIT",
   "workspaces": [
     "example",
@@ -44,10 +47,11 @@
     "example": "cd example && yarn dev",
     "dev": "concurrently \"yarn build-dev\" \"yarn workspace example-pmtiles dev\"",
     "build-dev": "node --es-module-specifier-resolution=node scripts/dev.mjs",
-    "build-prod": "node --es-module-specifier-resolution=node scripts/build.mjs"
+    "build-prod": "node ./scripts/build.mjs",
+    "build-esm": "esbuild ./src/index.ts --outfile=dist/index.mjs --sourcemap --format=esm",
+    "build-types": "tsc --emitDeclarationOnly --outDir dist"
   },
   "description": "This repo provides a typed Deck.gl layer and loader for PMTiles data. PMTiles data provides a serverless and compact way to store tile geospatial data. Combined with Deck.gl's rendering, this provides a flexible and powerful way to cheaply manage geospatial data.",
-  "main": "./src/index.ts",
   "directories": {
     "example": "example"
   },
