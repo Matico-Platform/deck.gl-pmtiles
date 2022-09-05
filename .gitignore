@@ -14,3 +14,5 @@ node_modules
 dist
 .yarn
 lib
+*/**/.DS_Store
+.DS_Store
