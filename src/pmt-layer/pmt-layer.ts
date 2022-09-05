@@ -90,6 +90,7 @@ export class PMTilesLayer extends MVTLayer {
           },
         },
       };
+      console.log('fetching data')
       return fetch(data, {
         propName: "data",
         layer: this,
