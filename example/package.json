@@ -12,7 +12,6 @@
     "@adobe/react-spectrum": "^3.21.1",
     "@react-spectrum/color": "^3.0.0-beta.15",
     "deck.gl": "^8.8.9",
-    "deck.gl-pmtiles": "workspace:^",
     "fflate": "^0.7.3",
     "pmtiles": "^1.1.0",
     "react": "^18.2.0",

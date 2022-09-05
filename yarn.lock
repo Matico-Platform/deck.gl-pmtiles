@@ -2193,6 +2193,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maticoapp/deck.gl-pmtiles@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@maticoapp/deck.gl-pmtiles@workspace:."
+  dependencies:
+    "@babel/core": ^7.18.13
+    "@babel/preset-env": ^7.18.10
+    "@rollup/plugin-babel": ^5.3.1
+    "@rollup/plugin-commonjs": ^22.0.2
+    "@rollup/plugin-node-resolve": ^13.3.0
+    "@rollup/plugin-typescript": ^8.4.0
+    "@typescript-eslint/eslint-plugin": latest
+    "@typescript-eslint/parser": latest
+    babel-loader: ^8.2.5
+    concurrently: ^7.3.0
+    deck.gl: ^8.8.9
+    esbuild: ^0.15.7
+    eslint: ^8.23.0
+    eslint-plugin-react: latest
+    fflate: ^0.7.3
+    geojson: ^0.5.0
+    pmtiles: ^1.1.0
+    rollup: ^2.79.0
+    rollup-plugin-terser: ^7.0.2
+    tslib: ^2.4.0
+    typescript: ^4.8.2
+  peerDependencies:
+    deck.gl: ^8.8.9
+    pmtiles: ^1.1.0
+  languageName: unknown
+  linkType: soft
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -6378,37 +6409,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deck.gl-pmtiles@workspace:., deck.gl-pmtiles@workspace:^":
-  version: 0.0.0-use.local
-  resolution: "deck.gl-pmtiles@workspace:."
-  dependencies:
-    "@babel/core": ^7.18.13
-    "@babel/preset-env": ^7.18.10
-    "@rollup/plugin-babel": ^5.3.1
-    "@rollup/plugin-commonjs": ^22.0.2
-    "@rollup/plugin-node-resolve": ^13.3.0
-    "@rollup/plugin-typescript": ^8.4.0
-    "@typescript-eslint/eslint-plugin": latest
-    "@typescript-eslint/parser": latest
-    babel-loader: ^8.2.5
-    concurrently: ^7.3.0
-    deck.gl: ^8.8.9
-    esbuild: ^0.15.7
-    eslint: ^8.23.0
-    eslint-plugin-react: latest
-    fflate: ^0.7.3
-    geojson: ^0.5.0
-    pmtiles: ^1.1.0
-    rollup: ^2.79.0
-    rollup-plugin-terser: ^7.0.2
-    tslib: ^2.4.0
-    typescript: ^4.8.2
-  peerDependencies:
-    deck.gl: ^8.8.9
-    pmtiles: ^1.1.0
-  languageName: unknown
-  linkType: soft
-
 "deck.gl@npm:^8.8.9":
   version: 8.8.9
   resolution: "deck.gl@npm:8.8.9"
@@ -7045,7 +7045,6 @@ __metadata:
     "@types/react-dom": ^18.0.6
     "@vitejs/plugin-react": ^2.1.0
     deck.gl: ^8.8.9
-    deck.gl-pmtiles: "workspace:^"
     fflate: ^0.7.3
     pmtiles: ^1.1.0
     react: ^18.2.0
