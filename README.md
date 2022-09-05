@@ -26,11 +26,19 @@ import React from 'react'
 import { PMTLayer } from "@maticoapp/deck.gl-pmtiles";
 import DeckGL from "@deck.gl/react/typed";
 
+const INITIAL_VIEW_STATE = {
+  longitude: -80,
+  latitude: 37,
+  zoom: 6,
+  pitch: 0,
+  bearing: 0,
+};
+
 const Example: React.FC = () => {
     const Layers = [
         new PMTLayer({
             id: "pmtiles-layer",
-            data: dataSource,
+            data: "https://protomaps-static.sfo3.digitaloceanspaces.com/mantle-trial.pmtiles",
             getFillColor: [255, 120, 120],
             stroked: true,
             getLineColor: [8, 8, 8],
@@ -41,6 +49,7 @@ const Example: React.FC = () => {
     return  <DeckGL
             controller={true}
             layers={layers}
+            initialViewState={INITIAL_VIEW_STATE}
             />
 }
 
