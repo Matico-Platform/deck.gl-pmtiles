@@ -1,5 +1,1 @@
-import { PMTLoader } from "./pmt-loader";
-
-export {
-    PMTLoader
-}
+export {PMTLoader, PMTWorkerLoader} from './pmt-loader';

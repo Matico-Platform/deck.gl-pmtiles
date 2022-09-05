@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PMTLayer, PMTLoader } from "../../src";
+import { PMTLayer } from "../../src";
 import "./App.css";
 import DeckGL from "@deck.gl/react/typed";
 import { BitmapLayer, GeoJsonLayer } from "@deck.gl/layers/typed";
