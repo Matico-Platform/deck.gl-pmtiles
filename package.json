@@ -39,13 +39,11 @@
     "pmtiles": "^1.1.0"
   },
   "scripts": {
-    "build": "rollup -c",
     "lint": "eslint --fix 'src/**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "example": "cd example && yarn dev",
     "dev": "concurrently \"yarn build-dev\" \"yarn workspace example-pmtiles dev\"",
     "build-dev": "node --es-module-specifier-resolution=node scripts/dev.mjs",
-    "build-prod": "node --es-module-specifier-resolution=node scripts/build.mjs",
-    "build-storybook": "build-storybook"
+    "build-prod": "node --es-module-specifier-resolution=node scripts/build.mjs"
   }
 }
