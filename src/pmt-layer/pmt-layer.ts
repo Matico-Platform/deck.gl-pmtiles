@@ -15,7 +15,7 @@ const defaultProps: DefaultProps<MVTLayerProps> = {
   uniqueIdProperty: "",
   highlightedFeatureId: null,
   binary: true,
-  loaders: [PMTLoader]
+  loaders: [PMTLoader],
 };
 
 export type ParsedPmTile = Feature[] | BinaryFeatures;
@@ -23,7 +23,6 @@ export type ParsedPmTile = Feature[] | BinaryFeatures;
 export type TileJson = {
   tilejson: string;
   tiles: string[];
-  // eslint-disable-next-line camelcase
   vector_layers: any[];
   attribution?: string;
   scheme?: string;
@@ -32,11 +31,10 @@ export type TileJson = {
   version?: string;
 };
 
-
 /** Props added by the PmTilesLayer  */
-export type PmTilesLayerProps = Omit<MVTLayerProps, "loaders">
+export type PmTilesLayerProps = Omit<MVTLayerProps, "loaders">;
 
-export class PMTilesLayer extends MVTLayer {
+export class PMTLayer extends MVTLayer {
   static layerName = "PMTilesLayer";
   static defaultProps = defaultProps;
 
@@ -59,18 +57,18 @@ export class PMTilesLayer extends MVTLayer {
       tileJSON: null,
     });
   }
+  async getZxy(z: number, x: number, y: number): Promise<Entry> {
+    const { pmtiles } = this.state;
+    return pmtiles.getZxy(z, x, y);
+  }
 
   getTileData(loadProps: TileLoadProps): Promise<ParsedPmTile> {
-    const { data, binary, pmtiles } = this.state;
+    const { data, binary } = this.state;
     const { index, signal } = loadProps;
     const { x, y, z } = index;
     let loadOptions = this.getLoadOptions();
     const { fetch } = this.props;
-    const zxyPromise = pmtiles.getZxy(z, x, y);
-    return zxyPromise.then((val: Entry) => {
-      if (!val) {
-        return null;
-      }
+    return this.getZxy(z, x, y).then((entry) => {
       loadOptions = {
         ...loadOptions,
         mimeType: "application/x-protobuf",
@@ -78,19 +76,15 @@ export class PMTilesLayer extends MVTLayer {
           ...loadOptions?.mvt,
           coordinates: this.context.viewport.resolution ? "wgs84" : "local",
           tileIndex: index,
-          // Local worker debug
-          // workerUrl: `modules/mvt/dist/mvt-loader.worker.js`
-          // Set worker to null to skip web workers
-          // workerUrl: null
         },
         gis: binary ? { format: "binary" } : {},
         fetch: {
           headers: {
-            Range: "bytes=" + val.offset + "-" + (val.offset + val.length - 1),
+            Range:
+              "bytes=" + entry.offset + "-" + (entry.offset + entry.length - 1),
           },
         },
       };
-      console.log('fetching data')
       return fetch(data, {
         propName: "data",
         layer: this,
@@ -100,7 +94,7 @@ export class PMTilesLayer extends MVTLayer {
     });
   }
 }
-export default PMTilesLayer;
+export default PMTLayer;
 
 // code adapted from
 // Deckgl MVT Layer (MIT) https://github.com/visgl/deck.gl/blob/master/modules/geo-layers/src/mvt-layer/mvt-layer.ts

@@ -1,6 +1,6 @@
-import PmTilesLayer from "./pmt-layer/pmt-layer";
+import PMTLayer from "./pmt-layer/pmt-layer";
 import { PMTLoader } from "./pmt-loader";
 export {
-    PmTilesLayer,
+    PMTLayer,
     PMTLoader
 }
