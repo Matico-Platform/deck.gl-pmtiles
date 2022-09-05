@@ -19,9 +19,9 @@ import { ColorArea, ColorWheel } from "@react-spectrum/color";
 import { parseColor } from "@react-stately/color";
 
 const INITIAL_VIEW_STATE = {
-  longitude: -122.41669,
-  latitude: 37.7853,
-  zoom: 5,
+  longitude: -87,
+  latitude: 42,
+  zoom: 7,
   pitch: 0,
   bearing: 0,
 };
@@ -35,9 +35,9 @@ export default function App() {
     end: 22,
   });
 
-  let [fill, setFill] = useState(parseColor("hsl(0, 100%, 50%)"));
+  let [fill, setFill] = useState(parseColor("hsl(162.22222222222223, 73.97260273972604%, 71.37254901960785%)"));
   let [, fillHue, fillLightness] = fill.getColorChannels();
-  let [border, setBorder] = useState(parseColor("hsl(0, 100%, 50%)"));
+  let [border, setBorder] = useState(parseColor("hsl(0, 0%, 18.823529411764707%)"));
   let [, borderHue, borderLightness] = border.getColorChannels();
   
   const layers = [
