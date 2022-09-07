@@ -1,6 +1,6 @@
 import { MVTLayer, MVTLayerProps } from "@deck.gl/geo-layers/typed";
 import { DefaultProps } from "@deck.gl/core/typed";
-import { GeoJsonLayer } from "@deck.gl/layers/typed";
+import { GeoJsonLayer, GeoJsonLayerProps } from "@deck.gl/layers/typed";
 import { Entry, PMTiles } from "pmtiles";
 
 // Types
@@ -31,10 +31,17 @@ export type TileJson = {
   version?: string;
 };
 
-/** Props added by the PmTilesLayer  */
-export type PmTilesLayerProps = Omit<MVTLayerProps, "loaders">;
+export type ExtraProps = {
+  raster?: boolean;
+}
 
-export class PMTLayer extends MVTLayer {
+/** Props added by the PmTilesLayer  */
+export type PmTilesLayerProps = Partial<GeoJsonLayerProps> & Omit<MVTLayerProps, "loaders">;
+
+export class PMTLayer extends MVTLayer<
+  any,
+  PmTilesLayerProps & ExtraProps
+> {
   static layerName = "PMTilesLayer";
   static defaultProps = defaultProps;
 
@@ -45,16 +52,20 @@ export class PMTLayer extends MVTLayer {
       this.context.viewport.resolution !== undefined
         ? false
         : this.props.binary;
+    const raster = this.props.raster;
     (this as any)._updateTileData = async (): Promise<void> => {
       let data = this.props.data;
+      let raster = this.props.raster;
       let tileJSON = null;
       let pmtiles = new PMTiles(data as string);
-      this.setState({ data, tileJSON, pmtiles });
+      this.setState({ data, tileJSON, pmtiles, raster });
     };
     this.setState({
       binary,
+      raster,
       data: null,
       tileJSON: null,
+      
     });
   }
   async getZxy(z: number, x: number, y: number): Promise<Entry> {
@@ -63,12 +74,12 @@ export class PMTLayer extends MVTLayer {
   }
 
   getTileData(loadProps: TileLoadProps): Promise<ParsedPmTile> {
-    const { data, binary } = this.state;
+    const { data, binary, raster, pmtiles } = this.state;
     const { index, signal } = loadProps;
     const { x, y, z } = index;
     let loadOptions = this.getLoadOptions();
     const { fetch } = this.props;
-    return this.getZxy(z, x, y).then((entry) => {
+    return pmtiles.getZxy(z, x, y).then((entry: Entry) => {
       loadOptions = {
         ...loadOptions,
         mimeType: "application/x-protobuf",
@@ -76,6 +87,7 @@ export class PMTLayer extends MVTLayer {
           ...loadOptions?.mvt,
           coordinates: this.context.viewport.resolution ? "wgs84" : "local",
           tileIndex: index,
+          raster: raster
         },
         gis: binary ? { format: "binary" } : {},
         fetch: {

@@ -20,18 +20,18 @@ import { parseColor } from "@react-stately/color";
 const INITIAL_VIEW_STATE = {
   longitude: -87,
   latitude: 42,
-  zoom: 7,
+  zoom: 3,
   pitch: 0,
   bearing: 0,
 };
 
 export default function App() {
   const [dataSource, setDataSource] = useState<string>(
-    "https://matico.s3.us-east-2.amazonaws.com/census/block_groups.pmtiles"
+    "https://protomaps-static.sfo3.digitaloceanspaces.com/PowersOfTwo.pmtiles"
   );
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number }>({
-    start: 4,
-    end: 22,
+    start: 0,
+    end: 10,
   });
 
   let [fill, setFill] = useState(parseColor("hsl(162.22222222222223, 73.97260273972604%, 71.37254901960785%)"));
@@ -40,31 +40,33 @@ export default function App() {
   let [, borderHue, borderLightness] = border.getColorChannels();
   
   const layers = [
-    new TileLayer({
-      data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      minZoom: 0,
-      maxZoom: 19,
-      tileSize: 256,
-      renderSubLayers: (props) => {
-        const {
-          // @ts-ignore
-          bbox: { west, south, east, north },
-        } = props.tile;
+    // new TileLayer({
+    //   data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    //   minZoom: 0,
+    //   maxZoom: 19,
+    //   tileSize: 256,
+    //   renderSubLayers: (props) => {
+    //     console.log(props)
+    //     const {
+    //       // @ts-ignore
+    //       bbox: { west, south, east, north },
+    //     } = props.tile;
 
-        return new BitmapLayer(props, {
-          data: null,
-          image: props.data,
-          bounds: [west, south, east, north],
-        });
-      },
-    }),
+    //     return new BitmapLayer(props, {
+    //       data: null,
+    //       image: props.data,
+    //       bounds: [west, south, east, north],
+    //     });
+    //   },
+    // }),
 
     new PMTLayer({
       id: "pmtiles-layer",
       data: dataSource,
-      onClick: (info) => {
-        console.log(info);
-      },
+      raster: true,
+      // onClick: (info) => {
+      //   console.log(info);
+      // },
       maxZoom: zoomRange.end,
       minZoom: zoomRange.start,
       // @ts-ignore
@@ -87,22 +89,22 @@ export default function App() {
       ),
       stroked: true,
       lineWidthMinPixels: 1,
-      pickable: true,
-      // @ts-ignore
-      // renderSubLayers: ({data, id, extensions, clipBounds}) => {
-      //   console.log(data)
-      //   return new GeoJsonLayer({
-      //     id: 'geojson-layer' + id,
-      //     data,
-      //     getFillColor: () => [255*Math.random(),255*Math.random(),255*Math.random()],
-      //     getLineColor: [0,0,0],
-      //     stroked: true,
-      //     lineWidthMinPixels: 1,
-      //     pickable: true,
-      //     clipBounds,
-      //     extensions
-      //   })
-      // }
+      pickable: false,
+      tileSize: 256,
+      renderSubLayers: (props) => {
+        console.log(props)
+        const {
+          // @ts-ignore
+          bbox: { west, south, east, north },
+        } = props.tile;
+
+        return new BitmapLayer(props, {
+          data: null,
+          image: props.data,
+          bounds: [west, south, east, north],
+          extensions: []
+        });
+      },
     }),
   ];
 
