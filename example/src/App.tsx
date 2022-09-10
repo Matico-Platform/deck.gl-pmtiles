@@ -73,7 +73,7 @@ export default function App() {
     isLoading,
     error,
     data: tableData,
-  } = useQuery(["tableData"], () => load("/percapita_income.csv", CSVLoader, {csv: {header:true, dynamicTyping: false}}));
+  } = useQuery(["tableData"], () => load("/percapita_income.csv", CSVLoader, {csv: {header:true, dynamicTyping: true}}));
 
   let [fill, setFill] = useState(parseColor("hsl(162, 74%, 71%)"));
   let [, fillHue, fillLightness] = fill.getColorChannels();
@@ -179,7 +179,7 @@ export default function App() {
           overflowY: "auto",
         }}
       >
-        <Flex direction="column" gap="size-150">
+        {/* <Flex direction="column" gap="size-150">
           <Heading level={4}>PMTiles Layer</Heading>
           <TextField
             label="PMTiles Source"
@@ -193,7 +193,7 @@ export default function App() {
             value={zoomRange}
             onChange={setZoomRange}
           />
-{/* 
+
           <View position="relative" width="size-2400">
             <Grid
               position="absolute"
@@ -212,9 +212,9 @@ export default function App() {
               />
             </Grid>
             <ColorWheel value={fill} onChange={setFill} size="size-2400" />
-          </View> */}
+          </View>
 
-          {/* <View position="relative" width="size-2400">
+          <View position="relative" width="size-2400">
             <Grid
               position="absolute"
               justifyContent="center"
@@ -232,8 +232,8 @@ export default function App() {
               />
             </Grid>
             <ColorWheel value={border} onChange={setBorder} size="size-2400" />
-          </View> */}
-        </Flex>
+          </View>
+        </Flex> */}
       </div>
     </div>
   );
