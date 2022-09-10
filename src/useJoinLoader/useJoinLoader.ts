@@ -9,7 +9,7 @@ type DataShapes = {
 type JoinProps = {
   mapData: any[];
   shape: "binary";
-  dataDict: { [id: string]: { [key: string]: any } };
+  dataDict: Map<string, object>;
   leftId: string;
 };
 
@@ -22,7 +22,7 @@ const join = <T extends JoinProps>(props: T): DataShapes[T["shape"]] => {
         properties &&
           properties.forEach((entry: { [key: string]: any }, i: number) => {
             const id = entry[leftId];
-            const data = dataDict[id];
+            const data = dataDict.get(id);
             if (data) {
               // @ts-ignore
               mapData[featureType].properties[i] = {
@@ -55,9 +55,9 @@ export const useJoinLoader = ({
   updateTriggers?: any[];
 }): LoaderWithParser => {
   const dataDict = useMemo(() => {
-    let tempDict: { [id: string]: { [key: string]: any } } = {};
+    const tempDict = new Map();
     tableData &&
-      tableData.forEach((entry) => (tempDict[entry[rightId]] = entry));
+      tableData.forEach((entry) => tempDict.set(entry[rightId], entry));
     return tempDict;
   }, [rightId, updateTriggers || tableData]);
   const injectedLoader = {
