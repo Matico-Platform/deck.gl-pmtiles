@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { PMTLayer } from "../../src";
+import React, { useState, useMemo } from "react";
+import { JoinLoader, PMTLayer, PMTLoader } from "../../src";
 import "./App.css";
 import DeckGL from "@deck.gl/react/typed";
 import { BitmapLayer, GeoJsonLayer } from "@deck.gl/layers/typed";
@@ -13,32 +13,97 @@ import {
   Grid,
   Flex,
   Text,
+  ProgressCircle
 } from "@adobe/react-spectrum";
+import { useJoinLoader } from "./useJoinLoader";
 // @ts-ignore
 import { ColorArea, ColorWheel } from "@react-spectrum/color";
 import { parseColor } from "@react-stately/color";
+import { useQuery } from "@tanstack/react-query";
+import { CSVLoader } from "@loaders.gl/csv";
+import { load } from "@loaders.gl/core";
+
 const INITIAL_VIEW_STATE = {
-  longitude: -87,
+  longitude: -90,
   latitude: 42,
-  zoom: 3,
+  zoom: 10,
   pitch: 0,
   bearing: 0,
 };
+const incomeBreaks = [
+  {value: 19624, color:"#440154"},
+  {value: 26061, color:"#414487"},
+  {value: 32860, color:"#2a788e"},
+  {value: 43794, color:"#22a884"},
+  {value: 652420, color:'#fde725'}
+]
+
+const getColorFunc = (breaks: {value:number, color:string}[], format = "rgbArray") => {
+  const normalizedBreaks = breaks.map(({value, color}) => {
+    const normalizedColor = parseColor(color).toFormat('rgb')
+    return {
+    value: value,
+    // @ts-ignore
+    color: [normalizedColor.red, normalizedColor.green, normalizedColor.blue]
+  }})
+
+  return (value: number) => {
+    // @ts-ignore
+    if ([undefined,null].includes(value)) return [20,20,20]
+    for (let i = 0; i < normalizedBreaks.length; i++) {
+      if (value < normalizedBreaks[i].value) {
+        return normalizedBreaks[i].color      
+      }
+    }
+    return normalizedBreaks.at(-1)?.color
+  }
+}
+
+const incomeScale = getColorFunc(incomeBreaks)
 
 export default function App() {
   const [dataSource, setDataSource] = useState<string>(
-    "https://protomaps-static.sfo3.digitaloceanspaces.com/PowersOfTwo.pmtiles"
+    "https://matico.s3.us-east-2.amazonaws.com/census/block_groups.pmtiles"
   );
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number }>({
     start: 0,
     end: 10,
   });
+  const {
+    isLoading,
+    error,
+    data: tableData,
+  } = useQuery(["tableData"], () => load("/percapita_income.csv", CSVLoader, {csv: {header:true, dynamicTyping: false}}));
 
-  let [fill, setFill] = useState(parseColor("hsl(162.22222222222223, 73.97260273972604%, 71.37254901960785%)"));
+  let [fill, setFill] = useState(parseColor("hsl(162, 74%, 71%)"));
   let [, fillHue, fillLightness] = fill.getColorChannels();
-  let [border, setBorder] = useState(parseColor("hsl(0, 0%, 18.823529411764707%)"));
+  let [border, setBorder] = useState(parseColor("hsl(0, 0%, 19%)"));
   let [, borderHue, borderLightness] = border.getColorChannels();
-  
+
+  const joinCbgLoader = useJoinLoader({
+    loader: PMTLoader,
+    shape: "binary",
+    leftId: "GEOID",
+    rightId: "GEOID",
+    tableData,
+    updateTriggers: [isLoading]
+  })
+
+  if (isLoading) {
+    return (
+      <div style={{position:"absolute", 
+        top:"50%",
+        left:"50%",
+        transform:"translate(-50%, -50%)",
+      }}>
+        <Flex direction="column" alignItems="center" justifyContent="center" gap="size-100">
+          <ProgressCircle aria-label="Loading…" isIndeterminate />
+          <Heading>Loading...</Heading>
+        </Flex>
+      </div>
+    )
+  }
+
   const layers = [
     // new TileLayer({
     //   data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -63,48 +128,33 @@ export default function App() {
     new PMTLayer({
       id: "pmtiles-layer",
       data: dataSource,
-      raster: true,
-      // onClick: (info) => {
-      //   console.log(info);
-      // },
+      // raster: true,
+      onClick: (info) => {
+        console.log(info);
+      },
       maxZoom: zoomRange.end,
       minZoom: zoomRange.start,
       // @ts-ignore
-      getFillColor: hslToRgb(
-        // @ts-ignore
-        fill["hue"]/360,
-        // @ts-ignore
-        fill["saturation"]/100,
-        // @ts-ignore
-        fill["lightness"]/100
-      ),
-      // @ts-ignore
-      getLineColor: hslToRgb(
-        // @ts-ignore
-        border["hue"]/360,
-        // @ts-ignore
-        border["saturation"]/100,
-        // @ts-ignore
-        border["lightness"]/100
-      ),
-      stroked: true,
+      getFillColor: d => incomeScale(d.properties?.["PerCapitaIncome"]),
+      stroked: false,
       lineWidthMinPixels: 1,
-      pickable: false,
+      pickable: true,
       tileSize: 256,
-      renderSubLayers: (props) => {
-        console.log(props)
-        const {
-          // @ts-ignore
-          bbox: { west, south, east, north },
-        } = props.tile;
+      loaders: [joinCbgLoader],
+      // renderSubLayers: (props) => {
+      //   console.log(props)
+      //   const {
+      //     // @ts-ignore
+      //     bbox: { west, south, east, north },
+      //   } = props.tile;
 
-        return new BitmapLayer(props, {
-          data: null,
-          image: props.data,
-          bounds: [west, south, east, north],
-          extensions: []
-        });
-      },
+      //   return new BitmapLayer(props, {
+      //     data: null,
+      //     image: props.data,
+      //     bounds: [west, south, east, north],
+      //     extensions: []
+      //   });
+      // },
     }),
   ];
 
@@ -143,7 +193,7 @@ export default function App() {
             value={zoomRange}
             onChange={setZoomRange}
           />
-
+{/* 
           <View position="relative" width="size-2400">
             <Grid
               position="absolute"
@@ -162,9 +212,9 @@ export default function App() {
               />
             </Grid>
             <ColorWheel value={fill} onChange={setFill} size="size-2400" />
-          </View>
+          </View> */}
 
-          <View position="relative" width="size-2400">
+          {/* <View position="relative" width="size-2400">
             <Grid
               position="absolute"
               justifyContent="center"
@@ -182,7 +232,7 @@ export default function App() {
               />
             </Grid>
             <ColorWheel value={border} onChange={setBorder} size="size-2400" />
-          </View>
+          </View> */}
         </Flex>
       </div>
     </div>
@@ -214,7 +264,7 @@ function hslToRgb(h: number, s: number, l: number) {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
-const hue2rgb = (p: number, q: number, t:number) => {
+const hue2rgb = (p: number, q: number, t: number) => {
   if (t < 0) t += 1;
   if (t > 1) t -= 1;
   if (t < 1 / 6) return p + (q - p) * 6 * t;

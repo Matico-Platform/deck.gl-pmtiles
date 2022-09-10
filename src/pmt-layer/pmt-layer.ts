@@ -36,7 +36,7 @@ export type ExtraProps = {
 }
 
 /** Props added by the PmTilesLayer  */
-export type PmTilesLayerProps = Partial<GeoJsonLayerProps> & Omit<MVTLayerProps, "loaders">;
+export type PmTilesLayerProps = Partial<GeoJsonLayerProps> & MVTLayerProps;
 
 export class PMTLayer extends MVTLayer<
   any,

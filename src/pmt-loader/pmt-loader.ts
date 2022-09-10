@@ -57,13 +57,10 @@ export const PMTLoader: LoaderWithParser = {
  * @returns A GeoJSON geometry object or a binary representation
  */
 async function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
-  console.log(arrayBuffer)
   if (options.pmt.raster){
     const blob = new Blob([arrayBuffer], {type: "image/png"});
-    console.log(blob)
     const url = URL.createObjectURL(blob);
     // const url = window.URL.createObjectURL(blob);
-    console.log(url)
     return createImageBitmap(blob);
   } else {
     let data = new Uint8Array(arrayBuffer);
