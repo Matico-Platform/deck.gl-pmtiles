@@ -9,7 +9,7 @@ import { ImageLoaderOptions } from "@loaders.gl/images/dist/image-loader";
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== "undefined" ? __VERSION__ : "latest";
 
-interface PMTLoaderOptions  {
+type PMTLoaderOptions = {
   pmt: {
     raster: boolean;
   }
@@ -20,15 +20,16 @@ const DEFAULT_PMT_LOADER_OPTIONS: PMTLoaderOptions & MVTLoaderOptions & ImageLoa
     raster: false
   },
   // @ts-ignore
-  mvt: {},
+  mvt: {
+  },
   image: {}
 };
 /**
  * Worker loader for the Mapbox Vector Tile format
  */
 export const PMTWorkerLoader: Loader = {
-  id: "pmtiles",
-  module: "pmtiles",
+  id: "pmt",
+  module: "pmt",
   name: "PMTiles",
   version: VERSION,
   extensions: ["pmtiles"],
@@ -45,8 +46,8 @@ export const PMTLoader: LoaderWithParser = {
   ...PMTWorkerLoader,
   parse: async (arrayBuffer, options?: PMTLoaderOptions) =>
     parsePMT(arrayBuffer, options),
+  parseSync: parsePMT,
   binary: true,
-  worker: false,
 };
 
 /**
@@ -56,7 +57,9 @@ export const PMTLoader: LoaderWithParser = {
  * @param options
  * @returns A GeoJSON geometry object or a binary representation
  */
-async function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
+function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
+  // console.log("parsePMT", JSON.stringify(options));
+  // console.log(arrayBuffer)
   if (options.pmt.raster){
     const blob = new Blob([arrayBuffer], {type: "image/png"});
     const url = URL.createObjectURL(blob);

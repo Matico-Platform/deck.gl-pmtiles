@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
   "main": "dist/index.js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "MIT",
   "workspaces": [
     "example",
@@ -31,20 +31,22 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
-    "fflate": "^0.7.3"
-  },
-  "peerDependencies": {
+    "fflate": "^0.7.3",
     "deck.gl": "^8.8.9",
     "pmtiles": "^1.1.0"
+  },
+  "peerDependencies": {
   },
   "scripts": {
     "lint": "eslint --fix 'src/**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "example": "cd example && yarn dev",
     "dev": "concurrently \"yarn build-dev\" \"yarn workspace example-pmtiles dev\"",
-    "build": "rollup -c && yarn build-bundle",
-    "build-bundle": "esbuild src/pmt-loader/bundle.ts --bundle --outfile=dist/pmt-loader-worker.min.js",
-    "build-dev": "rollup -c -w && yarn build-bundle"
+    "build": "yarn pre-build && rollup -c",
+    "pre-build": "yarn build-worker && yarn build-bundle",
+    "build-bundle": "esbuild src/pmt-loader/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "build-worker": "esbuild src/pmt-loader/workers/pmt-worker.ts --bundle --outfile=dist/pmt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-dev": "yarn pre-build && rollup -c"
   },
   "description": "This repo provides a typed Deck.gl layer and loader for PMTiles data. PMTiles data provides a serverless and compact way to store tile geospatial data. Combined with Deck.gl's rendering, this provides a flexible and powerful way to cheaply manage geospatial data.",
   "directories": {

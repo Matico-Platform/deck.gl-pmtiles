@@ -7,7 +7,7 @@ import { Entry, PMTiles } from "pmtiles";
 import type { BinaryFeatures } from "@loaders.gl/schema";
 import type { Feature } from "geojson";
 import { TileLoadProps } from "@deck.gl/geo-layers/typed/tile-layer/types";
-import { PMTLoader } from "../pmt-loader";
+import { PMTLoader, PMTWorkerLoader } from "../pmt-loader";
 
 const defaultProps: DefaultProps<MVTLayerProps> = {
   ...GeoJsonLayer.defaultProps,
@@ -15,7 +15,7 @@ const defaultProps: DefaultProps<MVTLayerProps> = {
   uniqueIdProperty: "",
   highlightedFeatureId: null,
   binary: true,
-  loaders: [PMTLoader],
+  loaders: [PMTWorkerLoader],
 };
 
 export type ParsedPmTile = Feature[] | BinaryFeatures;
@@ -84,7 +84,7 @@ export class PMTLayer extends MVTLayer<
         ...loadOptions,
         mimeType: "application/x-protobuf",
         pmt: {
-          ...loadOptions?.mvt,
+          ...loadOptions?.pmt,
           coordinates: this.context.viewport.resolution ? "wgs84" : "local",
           tileIndex: index,
           raster: raster
@@ -102,7 +102,8 @@ export class PMTLayer extends MVTLayer<
         layer: this,
         loadOptions,
         signal,
-      });
+        // @ts-ignore
+      })
     });
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { JoinLoader, PMTLayer, PMTLoader } from "../../src";
+import { MVTLayer } from "@deck.gl/geo-layers/typed";
+import { PMTLayer, PMTLoader, PMTWorkerLoader, useJoinData, useJoinLoader } from "../../src";
 import "./App.css";
 import DeckGL from "@deck.gl/react/typed";
 import { BitmapLayer, GeoJsonLayer } from "@deck.gl/layers/typed";
@@ -13,9 +14,8 @@ import {
   Grid,
   Flex,
   Text,
-  ProgressCircle
+  ProgressCircle,
 } from "@adobe/react-spectrum";
-import { useJoinLoader } from "./useJoinLoader";
 // @ts-ignore
 import { ColorArea, ColorWheel } from "@react-spectrum/color";
 import { parseColor } from "@react-stately/color";
@@ -31,35 +31,39 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 const incomeBreaks = [
-  {value: 19624, color:"#440154"},
-  {value: 26061, color:"#414487"},
-  {value: 32860, color:"#2a788e"},
-  {value: 43794, color:"#22a884"},
-  {value: 652420, color:'#fde725'}
-]
+  { value: 19624, color: "#440154" },
+  { value: 26061, color: "#414487" },
+  { value: 32860, color: "#2a788e" },
+  { value: 43794, color: "#22a884" },
+  { value: 652420, color: "#fde725" },
+];
 
-const getColorFunc = (breaks: {value:number, color:string}[], format = "rgbArray") => {
-  const normalizedBreaks = breaks.map(({value, color}) => {
-    const normalizedColor = parseColor(color).toFormat('rgb')
+const getColorFunc = (
+  breaks: { value: number; color: string }[],
+  format = "rgbArray"
+) => {
+  const normalizedBreaks = breaks.map(({ value, color }) => {
+    const normalizedColor = parseColor(color).toFormat("rgb");
     return {
-    value: value,
-    // @ts-ignore
-    color: [normalizedColor.red, normalizedColor.green, normalizedColor.blue]
-  }})
+      value: value,
+      // @ts-ignore
+      color: [normalizedColor.red, normalizedColor.green, normalizedColor.blue],
+    };
+  });
 
   return (value: number) => {
     // @ts-ignore
-    if ([undefined,null].includes(value)) return [20,20,20]
+    if ([undefined, null].includes(value)) return [20, 20, 20];
     for (let i = 0; i < normalizedBreaks.length; i++) {
       if (value < normalizedBreaks[i].value) {
-        return normalizedBreaks[i].color      
+        return normalizedBreaks[i].color;
       }
     }
-    return normalizedBreaks.at(-1)?.color
-  }
-}
+    return normalizedBreaks.at(-1)?.color;
+  };
+};
 
-const incomeScale = getColorFunc(incomeBreaks)
+const incomeScale = getColorFunc(incomeBreaks);
 
 export default function App() {
   const [dataSource, setDataSource] = useState<string>(
@@ -73,58 +77,97 @@ export default function App() {
     isLoading,
     error,
     data: tableData,
-  } = useQuery(["tableData"], () => load("/percapita_income.csv", CSVLoader, {csv: {header:true, dynamicTyping: true}}));
+  } = useQuery(["tableData"], () =>
+    load("/percapita_income.csv", CSVLoader, {
+      csv: { header: true, dynamicTyping: false },
+    })
+  );
 
   let [fill, setFill] = useState(parseColor("hsl(162, 74%, 71%)"));
   let [, fillHue, fillLightness] = fill.getColorChannels();
   let [border, setBorder] = useState(parseColor("hsl(0, 0%, 19%)"));
   let [, borderHue, borderLightness] = border.getColorChannels();
 
-  const joinCbgLoader = useJoinLoader({
-    loader: PMTLoader,
+  // const joinCbgLoader = useJoinLoader({
+  //   // @ts-ignore
+  //   loader: PMTWorkerLoader,
+  //   shape: "binary",
+  //   leftId: "GEOID",
+  //   rightId: "GEOID",
+  //   tableData,
+  //   updateTriggers: [isLoading],
+  // });
+
+  const cbgJoiner = useJoinData({
     shape: "binary",
     leftId: "GEOID",
     rightId: "GEOID",
     tableData,
-    updateTriggers: [isLoading]
-  })
+    updateTriggers: [isLoading],
+  });
 
   if (isLoading) {
     return (
-      <div style={{position:"absolute", 
-        top:"50%",
-        left:"50%",
-        transform:"translate(-50%, -50%)",
-      }}>
-        <Flex direction="column" alignItems="center" justifyContent="center" gap="size-100">
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <Flex
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          gap="size-100"
+        >
           <ProgressCircle aria-label="Loading…" isIndeterminate />
           <Heading>Loading...</Heading>
         </Flex>
       </div>
-    )
+    );
   }
 
   const layers = [
-    // new TileLayer({
-    //   data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    //   minZoom: 0,
-    //   maxZoom: 19,
-    //   tileSize: 256,
-    //   renderSubLayers: (props) => {
-    //     console.log(props)
-    //     const {
-    //       // @ts-ignore
-    //       bbox: { west, south, east, north },
-    //     } = props.tile;
+    new TileLayer({
+      data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      minZoom: 0,
+      maxZoom: 19,
+      tileSize: 256,
+      renderSubLayers: (props) => {
+        // console.log(props)
+        const {
+          // @ts-ignore
+          bbox: { west, south, east, north },
+        } = props.tile;
 
-    //     return new BitmapLayer(props, {
-    //       data: null,
-    //       image: props.data,
-    //       bounds: [west, south, east, north],
-    //     });
-    //   },
+        return new BitmapLayer(props, {
+          data: null,
+          image: props.data,
+          bounds: [west, south, east, north],
+        });
+      },
+    }),
+    // new MVTLayer({
+    //   data: `https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoiZGhhbHBlcm4iLCJhIjoiY2p3MHFvZHg2MDcyczQ4bXBjNW85aDh2OCJ9.OUluk6vAGe5BVXLOiGIoQQ`,
+
+    // minZoom: 0,
+    // maxZoom: 23,
+    // getLineColor: [192, 192, 192],
+    // getFillColor: [140, 170, 180],
+    // getLineWidth: f => {
+    //   switch (f.properties.class) {
+    //     case 'street':
+    //       return 6;
+    //     case 'motorway':
+    //       return 10;
+    //     default:
+    //       return 1;
+    //   }
+    // },
+    // lineWidthMinPixels: 1
     // }),
-
     new PMTLayer({
       id: "pmtiles-layer",
       data: dataSource,
@@ -135,26 +178,36 @@ export default function App() {
       maxZoom: zoomRange.end,
       minZoom: zoomRange.start,
       // @ts-ignore
-      getFillColor: d => incomeScale(d.properties?.["PerCapitaIncome"]),
+      getFillColor: (d) => incomeScale(d.properties?.["PerCapitaIncome"]),
       stroked: false,
       lineWidthMinPixels: 1,
       pickable: true,
+      loadOptions: {
+        pmt: {
+          // workerUrl: "/node_modules/@loaders.gl/mvt/dist/mvt-worker.js",
+          workerUrl: "/pmt-worker.js",
+          maxConcurrency:
+            typeof navigator !== "undefined"
+              ? navigator.hardwareConcurrency - 1
+              : 3,
+          maxMobileConcurrency:
+            typeof navigator !== "undefined"
+              ? navigator.hardwareConcurrency - 1
+              : 3,
+        },
+      },
       tileSize: 256,
-      loaders: [joinCbgLoader],
-      // renderSubLayers: (props) => {
-      //   console.log(props)
-      //   const {
-      //     // @ts-ignore
-      //     bbox: { west, south, east, north },
-      //   } = props.tile;
-
-      //   return new BitmapLayer(props, {
-      //     data: null,
-      //     image: props.data,
-      //     bounds: [west, south, east, north],
-      //     extensions: []
-      //   });
-      // },
+      renderSubLayers: (props) => {
+        if (props.data) {
+          return new GeoJsonLayer({
+            ...props,
+            // @ts-ignore
+            data: cbgJoiner(props.data),
+          });
+        } else {
+          return null;
+        }
+      },
     }),
   ];
 
