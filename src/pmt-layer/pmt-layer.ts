@@ -84,10 +84,11 @@ export class PMTLayer extends MVTLayer<
         ...loadOptions,
         mimeType: "application/x-protobuf",
         pmt: {
-          ...loadOptions?.pmt,
+          workerUrl: "https://unpkg.com/@maticoapp/deck.gl-pmtiles@latest/dist/pmt-worker.js",
           coordinates: this.context.viewport.resolution ? "wgs84" : "local",
           tileIndex: index,
-          raster: raster
+          raster: raster,
+          ...loadOptions?.pmt,
         },
         gis: binary ? { format: "binary" } : {},
         fetch: {
