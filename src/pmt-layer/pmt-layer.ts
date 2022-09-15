@@ -9,6 +9,8 @@ import type { Feature } from "geojson";
 import { TileLoadProps } from "@deck.gl/geo-layers/typed/tile-layer/types";
 import { PMTLoader, PMTWorkerLoader } from "../pmt-loader";
 
+const MAX_REATTEMPTS = 5;
+
 const defaultProps: DefaultProps<MVTLayerProps> = {
   ...GeoJsonLayer.defaultProps,
   onDataLoad: { type: "function", value: null, optional: true, compare: false },
@@ -73,13 +75,18 @@ export class PMTLayer extends MVTLayer<
     return pmtiles.getZxy(z, x, y);
   }
 
-  getTileData(loadProps: TileLoadProps): Promise<ParsedPmTile> {
+  getTileData(loadProps: TileLoadProps, iter?: number): Promise<ParsedPmTile> {
+    const attemptCount = iter || 0;
+    if (attemptCount > MAX_REATTEMPTS) return new Promise((resolve) => resolve(null));
     const { data, binary, raster, pmtiles } = this.state;
     const { index, signal } = loadProps;
     const { x, y, z } = index;
     let loadOptions = this.getLoadOptions();
     const { fetch } = this.props;
     return pmtiles.getZxy(z, x, y).then((entry: Entry) => {
+      if (!entry){
+        return new Promise((resolve) => resolve(null));
+      }
       loadOptions = {
         ...loadOptions,
         mimeType: "application/x-protobuf",
@@ -102,8 +109,13 @@ export class PMTLayer extends MVTLayer<
         propName: "data",
         layer: this,
         loadOptions,
-        signal,
-        // @ts-ignore
+        signal
+      }).catch((_err: any) => {
+        // console.log(err)
+        return this.getTileData(
+          loadProps,
+          attemptCount + 1
+        )
       })
     });
   }
