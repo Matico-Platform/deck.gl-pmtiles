@@ -67,11 +67,11 @@ const incomeScale = getColorFunc(incomeBreaks);
 
 export default function App() {
   const [dataSource, setDataSource] = useState<string>(
-    "https://matico.s3.us-east-2.amazonaws.com/census/block_groups.pmtiles"
+    "https://matico.s3.us-east-2.amazonaws.com/census/blocks.pmtiles"
   );
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number }>({
-    start: 0,
-    end: 10,
+    start: 10,
+    end: 11,
   });
   const {
     isLoading,
@@ -178,8 +178,8 @@ export default function App() {
       maxZoom: zoomRange.end,
       minZoom: zoomRange.start,
       // @ts-ignore
-      getFillColor: (d) => incomeScale(d.properties?.["PerCapitaIncome"]),
-      stroked: false,
+      getFillColor: (d) => [120,120,120],//incomeScale(d.properties?.["PerCapitaIncome"]),
+      stroked: true,
       lineWidthMinPixels: 1,
       pickable: true,
       loadOptions: {
@@ -232,7 +232,7 @@ export default function App() {
           overflowY: "auto",
         }}
       >
-        {/* <Flex direction="column" gap="size-150">
+        <Flex direction="column" gap="size-150">
           <Heading level={4}>PMTiles Layer</Heading>
           <TextField
             label="PMTiles Source"
@@ -247,7 +247,7 @@ export default function App() {
             onChange={setZoomRange}
           />
 
-          <View position="relative" width="size-2400">
+          {/* <View position="relative" width="size-2400">
             <Grid
               position="absolute"
               justifyContent="center"
@@ -285,8 +285,8 @@ export default function App() {
               />
             </Grid>
             <ColorWheel value={border} onChange={setBorder} size="size-2400" />
-          </View>
-        </Flex> */}
+          </View> */}
+        </Flex>
       </div>
     </div>
   );

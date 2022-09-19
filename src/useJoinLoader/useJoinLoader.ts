@@ -23,7 +23,7 @@ function join<T extends DataShapeNames>({
   dataAccessor,
 }: {
   mapData: DataShapes[T];
-  shape: T extends DataShapeNames ? T : never;
+  shape: T;
   leftId: string;
   dataAccessor: (key: string) => object;
 }): DataShapes[T] {
@@ -32,8 +32,10 @@ function join<T extends DataShapeNames>({
     case "binary-geometry":
     case "binary": {
       const isColumnar = shape === "columnar-table";
-      // @ts-ignore
-      let dataInner = isColumnar ? mapData.data : mapData;
+      const dataInner = isColumnar 
+        ? (mapData as DataShapes["columnar-table"])['data']
+        : mapData as DataShapes["binary"];
+
       Object.entries(dataInner).forEach(
         ([featureType, { properties }]: BinaryEntries) => {
           properties &&
@@ -54,8 +56,10 @@ function join<T extends DataShapeNames>({
     case "geojson-row-table":
     case "geojson": {
       const isRowTable = shape === "geojson-row-table";
-      // @ts-ignore
-      let dataInner = isRowTable ? mapData.data : mapData;
+      const dataInner = isRowTable 
+        ? (mapData as DataShapes["geojson-row-table"])['data']
+        : mapData as DataShapes["geojson"];
+
       dataInner.features.forEach((entry: { [key: string]: any }) => {
         const id = entry.properties[leftId];
         const data = dataAccessor(id);
@@ -135,7 +139,7 @@ export function useJoinData<T extends DataShapeNames>({
   dataMap,
   updateTriggers,
 }: {
-  shape: T extends keyof DataShapes ? T : never;
+  shape: T;
   leftId: string;
   rightId: string;
   tableData?: { [key: string]: any }[];
