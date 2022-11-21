@@ -44,9 +44,14 @@ export const PMTWorkerLoader: Loader = {
  */
 export const PMTLoader: LoaderWithParser = {
   ...PMTWorkerLoader,
-  parse: async (arrayBuffer, options?: PMTLoaderOptions) =>
-    parsePMT(arrayBuffer, options),
-  parseSync: parsePMT,
+  parse: async (arrayBuffer, options?: PMTLoaderOptions) => {
+    console.log('PMT Loader', arrayBuffer, options);
+    return parsePMT(arrayBuffer, options)
+  },
+  parseSync: (arrayBuffer, options?: PMTLoaderOptions) => {
+    console.log('PMT Loader', arrayBuffer, options);
+    return parsePMT(arrayBuffer, options)
+  },
   binary: true,
 };
 
@@ -67,9 +72,7 @@ function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
     return createImageBitmap(blob);
   } else {
     let data = new Uint8Array(arrayBuffer);
-    if (data[0] === 0x1f && data[1] === 0x8b) {
-      data = decompressSync(data);
-    }
+    console.log('parsing...')
     return ParseMVT(data, options);
   }
 }

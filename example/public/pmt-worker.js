@@ -12437,7 +12437,7 @@
 
   // src/pmt-loader/pmt-loader.ts
   var import_parse_mvt = __toESM(require_parse_mvt());
-  var VERSION = true ? "0.0.8" : "latest";
+  var VERSION = true ? "0.0.3" : "latest";
   var DEFAULT_PMT_LOADER_OPTIONS = {
     pmt: {
       raster: false

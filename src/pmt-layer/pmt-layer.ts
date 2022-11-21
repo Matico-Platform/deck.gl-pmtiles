@@ -2,14 +2,14 @@ import { MVTLayer, MVTLayerProps } from "@deck.gl/geo-layers/typed";
 import { DefaultProps } from "@deck.gl/core/typed";
 import { GeoJsonLayer, GeoJsonLayerProps } from "@deck.gl/layers/typed";
 import { Entry, PMTiles } from "pmtiles";
+import ParseMVT from "@loaders.gl/mvt/dist/lib/parse-mvt";
 
+import { decompressSync } from "fflate";
 // Types
 import type { BinaryFeatures } from "@loaders.gl/schema";
 import type { Feature } from "geojson";
 import { TileLoadProps } from "@deck.gl/geo-layers/typed/tile-layer/types";
 import { PMTLoader, PMTWorkerLoader } from "../pmt-loader";
-
-const MAX_REATTEMPTS = 5;
 
 const defaultProps: DefaultProps<MVTLayerProps> = {
   ...GeoJsonLayer.defaultProps,
@@ -17,7 +17,7 @@ const defaultProps: DefaultProps<MVTLayerProps> = {
   uniqueIdProperty: "",
   highlightedFeatureId: null,
   binary: true,
-  loaders: [PMTWorkerLoader],
+  loaders: [PMTLoader], // PMTWorkerLoader
 };
 
 export type ParsedPmTile = Feature[] | BinaryFeatures;
@@ -60,7 +60,9 @@ export class PMTLayer extends MVTLayer<
       let raster = this.props.raster;
       let tileJSON = null;
       let pmtiles = new PMTiles(data as string);
-      this.setState({ data, tileJSON, pmtiles, raster });
+      const header = await pmtiles.getHeader();
+      console.log('header', header)
+      this.setState({ data, tileJSON, pmtiles, raster, header });
     };
     this.setState({
       binary,
@@ -70,54 +72,24 @@ export class PMTLayer extends MVTLayer<
       
     });
   }
-  async getZxy(z: number, x: number, y: number): Promise<Entry> {
-    const { pmtiles } = this.state;
-    return pmtiles.getZxy(z, x, y);
-  }
+  
 
   getTileData(loadProps: TileLoadProps, iter?: number): Promise<ParsedPmTile> {
-    const attemptCount = iter || 0;
-    if (attemptCount > MAX_REATTEMPTS) return new Promise((resolve) => resolve(null));
-    const { data, binary, raster, pmtiles } = this.state;
+    const { pmtiles } = this.state;
     const { index, signal } = loadProps;
     const { x, y, z } = index;
-    let loadOptions = this.getLoadOptions();
-    const { fetch } = this.props;
-    return pmtiles.getZxy(z, x, y).then((entry: Entry) => {
-      if (!entry){
-        return new Promise((resolve) => resolve(null));
-      }
-      loadOptions = {
-        ...loadOptions,
-        mimeType: "application/x-protobuf",
-        pmt: {
-          workerUrl: "https://unpkg.com/@maticoapp/deck.gl-pmtiles@latest/dist/pmt-worker.js",
-          coordinates: this.context.viewport.resolution ? "wgs84" : "local",
-          tileIndex: index,
-          raster: raster,
-          ...loadOptions?.pmt,
-        },
-        gis: binary ? { format: "binary" } : {},
-        fetch: {
-          headers: {
-            Range:
-              "bytes=" + entry.offset + "-" + (entry.offset + entry.length - 1),
-          },
-        },
-      };
-      return fetch(data, {
-        propName: "data",
-        layer: this,
-        loadOptions,
-        signal
-      }).catch((_err: any) => {
-        // console.log(err)
-        return this.getTileData(
-          loadProps,
-          attemptCount + 1
-        )
+    return pmtiles.getZxy(z, x, y, signal).then((entry) => {
+      // console.log('entry', entry.data)
+      const parsedData = ParseMVT(entry.data, {
+        mvt: {
+          shape: 'geojson',
+          coordinates: 'wgs84',
+          tileIndex: { x, y, z }
+        }
       })
-    });
+      console.log('parsedData', parsedData)
+      return parsedData.data
+    })
   }
 }
 export default PMTLayer;

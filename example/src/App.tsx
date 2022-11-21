@@ -26,7 +26,7 @@ import { load } from "@loaders.gl/core";
 const INITIAL_VIEW_STATE = {
   longitude: -90,
   latitude: 42,
-  zoom: 10,
+  zoom: 7,
   pitch: 0,
   bearing: 0,
 };
@@ -67,11 +67,11 @@ const incomeScale = getColorFunc(incomeBreaks);
 
 export default function App() {
   const [dataSource, setDataSource] = useState<string>(
-    "https://matico.s3.us-east-2.amazonaws.com/census/blocks.pmtiles"
+    "/output.pmtiles"
   );
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number }>({
-    start: 10,
-    end: 11,
+    start: 5,
+    end: 10,
   });
   const {
     isLoading,
@@ -182,27 +182,18 @@ export default function App() {
       stroked: true,
       lineWidthMinPixels: 1,
       pickable: true,
-      loadOptions: {
-        pmt: {
-          // workerUrl: "/node_modules/@loaders.gl/mvt/dist/mvt-worker.js",
-          workerUrl: "/pmt-worker.js",
-          maxConcurrency:
-            typeof navigator !== "undefined"
-              ? navigator.hardwareConcurrency - 1
-              : 3,
-          maxMobileConcurrency:
-            typeof navigator !== "undefined"
-              ? navigator.hardwareConcurrency - 1
-              : 3,
-        },
-      },
       tileSize: 256,
+      loadOptions: {worker: false},
       renderSubLayers: (props) => {
+        console.log('layer data', props.data)
         if (props.data) {
           return new GeoJsonLayer({
             ...props,
             // @ts-ignore
-            data: cbgJoiner(props.data),
+            data: {
+              type: "FeatureCollection",
+              features: props.data,
+            },
           });
         } else {
           return null;
