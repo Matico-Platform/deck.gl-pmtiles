@@ -149,25 +149,6 @@ export default function App() {
         });
       },
     }),
-    // new MVTLayer({
-    //   data: `https://a.tiles.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoiZGhhbHBlcm4iLCJhIjoiY2p3MHFvZHg2MDcyczQ4bXBjNW85aDh2OCJ9.OUluk6vAGe5BVXLOiGIoQQ`,
-
-    // minZoom: 0,
-    // maxZoom: 23,
-    // getLineColor: [192, 192, 192],
-    // getFillColor: [140, 170, 180],
-    // getLineWidth: f => {
-    //   switch (f.properties.class) {
-    //     case 'street':
-    //       return 6;
-    //     case 'motorway':
-    //       return 10;
-    //     default:
-    //       return 1;
-    //   }
-    // },
-    // lineWidthMinPixels: 1
-    // }),
     new PMTLayer({
       id: "pmtiles-layer",
       data: dataSource,
@@ -177,23 +158,17 @@ export default function App() {
       },
       maxZoom: zoomRange.end,
       minZoom: zoomRange.start,
-      // @ts-ignore
-      getFillColor: (d) => [120,120,120],//incomeScale(d.properties?.["PerCapitaIncome"]),
+      getFillColor: (d: any) => [120,120,120],//incomeScale(d.properties?.["PerCapitaIncome"]),
       stroked: true,
       lineWidthMinPixels: 1,
       pickable: true,
       tileSize: 256,
-      loadOptions: {worker: false},
+      // loadOptions: {worker: false},
       renderSubLayers: (props) => {
-        console.log('layer data', props.data)
         if (props.data) {
           return new GeoJsonLayer({
             ...props,
-            // @ts-ignore
-            data: {
-              type: "FeatureCollection",
-              features: props.data,
-            },
+            data: props.data,
           });
         } else {
           return null;
