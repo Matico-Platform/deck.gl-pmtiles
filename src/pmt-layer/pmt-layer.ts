@@ -55,7 +55,6 @@ export class DeckglPmtiles extends PMTiles {
   ): Promise<ZxyOffset | undefined> {
     const tile_id = zxyToTileId(z, x, y);
     const header = await this.cache.getHeader(this.source);
-
     // V2 COMPATIBILITY
     // if (header.specVersion < 3) {
     // 	return v2.getZxy(header, this.source, this.cache, z, x, y, signal);
@@ -149,7 +148,7 @@ export class PMTLayer<
           ...loadOptions,
           mimeType: "application/x-protobuf",
           pmt: {
-            workerUrl: "http://127.0.0.1:5173/dist/pmt-worker.js",
+            workerUrl: "https://unpkg.com/@maticoapp/deck.gl-pmtiles@latest/dist/pmt-worker.js",
             coordinates: this.context.viewport.resolution ? "wgs84" : "local",
             tileIndex: index,
             raster: raster,
