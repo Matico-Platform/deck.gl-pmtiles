@@ -4,6 +4,11 @@ This repo provides a typed Deck.gl layer and loader for PMTiles data. PMTiles da
 
 Learn more about Brandon Liu's [PMTiles and ProtoMaps work](https://github.com/protomaps/PMTiles).
 
+## Breaking Changes
+Version 0.0.3 breaks support for V2 tiles. Legacy support will be coming back soon. If you need to use legacy v2 spec PMtiles, use version 0.0.14 of this package.
+## Roadmap
+- Raster tile support
+- V2 legacy support
 ## Repo Scripts:
 
 ```js

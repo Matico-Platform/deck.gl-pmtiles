@@ -7,17 +7,17 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "./dist",
+    "outDir": "example/public/dist",
     "preserveConstEnums": true,
     "baseUrl": "./src/",
     "allowSyntheticDefaultImports":true,
     "target": "es6",
     "declaration": true,
-    "declarationDir": "./dist/",
+    "declarationDir": "example/public/dist",
     "skipLibCheck": true
   },
   "exclude": [
     "node_modules",
-    "dist/**/*"
+    "example/public/dist/**/*"
   ]
 }

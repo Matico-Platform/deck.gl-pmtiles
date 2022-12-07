@@ -5,6 +5,7 @@ import ParseMVT from "@loaders.gl/mvt/dist/lib/parse-mvt";
 import { MVTLoaderOptions } from "@loaders.gl/mvt/dist/lib/types";
 import parseImage from '@loaders.gl/images/dist/lib/parsers/parse-image'
 import { ImageLoaderOptions } from "@loaders.gl/images/dist/image-loader";
+import { Compression } from "pmtiles";
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== "undefined" ? __VERSION__ : "latest";
@@ -12,6 +13,7 @@ const VERSION = typeof __VERSION__ !== "undefined" ? __VERSION__ : "latest";
 type PMTLoaderOptions = {
   pmt: {
     raster: boolean;
+    tileCompression?: Compression;
   }
 };
 
@@ -44,9 +46,12 @@ export const PMTWorkerLoader: Loader = {
  */
 export const PMTLoader: LoaderWithParser = {
   ...PMTWorkerLoader,
-  parse: async (arrayBuffer, options?: PMTLoaderOptions) =>
-    parsePMT(arrayBuffer, options),
-  parseSync: parsePMT,
+  parse: async (arrayBuffer, options?: PMTLoaderOptions) => {
+    return parsePMT(arrayBuffer, options)
+  },
+  parseSync: (arrayBuffer, options?: PMTLoaderOptions) => {
+    return parsePMT(arrayBuffer, options)
+  },
   binary: true,
 };
 
@@ -58,18 +63,27 @@ export const PMTLoader: LoaderWithParser = {
  * @returns A GeoJSON geometry object or a binary representation
  */
 function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
-  // console.log("parsePMT", JSON.stringify(options));
-  // console.log(arrayBuffer)
   if (options.pmt.raster){
     const blob = new Blob([arrayBuffer], {type: "image/png"});
     const url = URL.createObjectURL(blob);
     // const url = window.URL.createObjectURL(blob);
     return createImageBitmap(blob);
   } else {
-    let data = new Uint8Array(arrayBuffer);
-    if (data[0] === 0x1f && data[1] === 0x8b) {
-      data = decompressSync(data);
-    }
-    return ParseMVT(data, options);
+    const decompressed = fflateDecompress(arrayBuffer, options.pmt.tileCompression)
+    const tiledata = ParseMVT(decompressed, options);
+    return tiledata;
+  }
+}
+
+function fflateDecompress(
+  buf: ArrayBuffer,
+  compression: Compression
+): ArrayBuffer {
+  if (compression === Compression.None || compression === Compression.Unknown) {
+    return buf;
+  } else if (compression === Compression.Gzip) {
+    return decompressSync(new Uint8Array(buf));
+  } else {
+    throw Error("Compression method not supported");
   }
 }
