@@ -35,14 +35,15 @@ function join<T extends DataShapeNames>({
       const dataInner = isColumnar 
         ? (mapData as DataShapes["columnar-table"])['data']
         : mapData as DataShapes["binary"];
-
+      // @ts-ignore
       Object.entries(dataInner).forEach(
+        // @ts-ignore
         ([featureType, { properties }]: BinaryEntries) => {
           properties &&
             properties.forEach((entry: { [key: string]: any }, i: number) => {
               const id = entry[leftId];
               const data = dataAccessor(id);
-              if (data) {
+              if (data && dataInner?.[featureType]) { // @ts-ignore
                 dataInner[featureType].properties[i] = {
                   ...entry,
                   ...data,

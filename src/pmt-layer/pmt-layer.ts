@@ -1,22 +1,23 @@
-import {
-  type TileLayerProps,
-  type MVTLayerProps,
-  MVTLayer,
-} from "@deck.gl/geo-layers/typed";
+import { type TileLayerProps, MVTLayer } from "@deck.gl/geo-layers/typed";
 import { type DefaultProps } from "@deck.gl/core/typed";
 import { GeoJsonLayer, type GeoJsonLayerProps } from "@deck.gl/layers/typed";
-import { type _MVTLayerProps } from "@deck.gl/geo-layers/src/mvt-layer/mvt-layer";
+
 import { findTile, PMTiles, zxyToTileId } from "pmtiles";
 import type { BinaryFeatures } from "@loaders.gl/schema";
 import type { Feature } from "geojson";
-import { type TileLoadProps } from "@deck.gl/geo-layers/typed/tile-layer/types";
-import { PMTLoader, PMTWorkerLoader } from "../pmt-loader";
 
-export type ParsedPmTile = Feature[] | BinaryFeatures;
+import type {Loader} from '@loaders.gl/loader-utils';
+
+import { PMTWorkerLoader } from "../pmt-loader";
+
+
+// from @deck.gl/geo-layers/src/mvt-layer/mvt-layer
+
 
 export type TileJson = {
   tilejson: string;
   tiles: string[];
+  // eslint-disable-next-line camelcase
   vector_layers: any[];
   attribution?: string;
   scheme?: string;
@@ -24,6 +25,52 @@ export type TileJson = {
   minzoom?: number;
   version?: string;
 };
+/** Props added by the MVTLayer  */
+export type _MVTLayerProps = {
+  /** Called if `data` is a TileJSON URL when it is successfully fetched. */
+  onDataLoad?: ((tilejson: TileJson | null) => void) | null;
+
+  /** Needed for highlighting a feature split across two or more tiles. */
+  uniqueIdProperty?: string;
+
+  /** A feature with ID corresponding to the supplied value will be highlighted. */
+  highlightedFeatureId?: string | null;
+
+  /**
+   * Use tile data in binary format.
+   *
+   * @default true
+   */
+  binary?: boolean;
+
+  /**
+   * Loaders used to transform tiles into `data` property passed to `renderSubLayers`.
+   *
+   * @default [MVTWorkerLoader] from `@loaders.gl/mvt`
+   */
+  loaders?: Loader[];
+};
+
+// From @deck.gl/geo-layers/typed/tile-layer/types
+export type GeoBoundingBox = {west: number; north: number; east: number; south: number};
+export type NonGeoBoundingBox = {left: number; top: number; right: number; bottom: number};
+
+export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
+
+export type TileIndex = {x: number; y: number; z: number};
+
+export type TileLoadProps = {
+  index: TileIndex;
+  id: string;
+  bbox: TileBoundingBox;
+  url?: string | null;
+  signal?: AbortSignal;
+  userData?: Record<string, any>;
+  zoom?: number;
+};
+
+
+export type ParsedPmTile = Feature[] | BinaryFeatures;
 
 export type ExtraProps = {
   raster?: boolean;
@@ -111,20 +158,18 @@ export class PMTLayer<
     const raster = this.props.raster;
 
     (this as any)._updateTileData = async (): Promise<void> => {
-      let data = this.props.data;
+      const data = this.props.data;
       // @ts-ignore
-      let raster = this.props.raster;
-      let tileJSON = null;
-      let pmtiles = new DeckglPmtiles(data as string);
+      const raster = this.props.raster;
+      const pmtiles = new DeckglPmtiles(data as string);
       const header = await pmtiles.getHeader();
-      this.setState({ data, tileJSON, pmtiles, raster, header });
+      this.setState({ data, pmtiles, raster, header });
     };
 
     this.setState({
       binary,
       raster,
       data: null,
-      tileJSON: null,
     });
   }
 

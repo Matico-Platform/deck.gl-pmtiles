@@ -1,4 +1,4 @@
-import type { Loader, LoaderWithParser } from "@loaders.gl/loader-utils";
+import type { Loader, LoaderWithParser, LoaderOptions } from "@loaders.gl/loader-utils";
 //@ts-ignore
 import { decompressSync } from "fflate";
 import ParseMVT from "@loaders.gl/mvt/dist/lib/parse-mvt";
@@ -9,10 +9,11 @@ import { ImageLoaderOptions } from "@loaders.gl/images/dist/image-loader";
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== "undefined" ? __VERSION__ : "latest";
 
-interface JoinLoaderOptions  {
-  join: {
+type JoinLoaderOptions = LoaderOptions & {
+  join?: {
+    
   }
-};
+}
 
 const DEFAULT_PMT_LOADER_OPTIONS: JoinLoaderOptions = {
   join: {

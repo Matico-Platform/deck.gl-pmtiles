@@ -1,18 +1,16 @@
-import type { Loader, LoaderWithParser } from "@loaders.gl/loader-utils";
-//@ts-ignore
+import type { Loader, LoaderWithParser, LoaderOptions } from "@loaders.gl/loader-utils";
 import { decompressSync } from "fflate";
 import ParseMVT from "@loaders.gl/mvt/dist/lib/parse-mvt";
 import { MVTLoaderOptions } from "@loaders.gl/mvt/dist/lib/types";
-import parseImage from '@loaders.gl/images/dist/lib/parsers/parse-image'
 import { ImageLoaderOptions } from "@loaders.gl/images/dist/image-loader";
 import { Compression } from "pmtiles";
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== "undefined" ? __VERSION__ : "latest";
 
-type PMTLoaderOptions = {
-  pmt: {
-    raster: boolean;
+type PMTLoaderOptions = LoaderOptions & {
+  pmt?: {
+    raster?: boolean;
     tileCompression?: Compression;
   }
 };
@@ -46,9 +44,11 @@ export const PMTWorkerLoader: Loader = {
  */
 export const PMTLoader: LoaderWithParser = {
   ...PMTWorkerLoader,
+  // @ts-ignore
   parse: async (arrayBuffer, options?: PMTLoaderOptions) => {
     return parsePMT(arrayBuffer, options)
   },
+  // @ts-ignore
   parseSync: (arrayBuffer, options?: PMTLoaderOptions) => {
     return parsePMT(arrayBuffer, options)
   },
@@ -63,12 +63,12 @@ export const PMTLoader: LoaderWithParser = {
  * @returns A GeoJSON geometry object or a binary representation
  */
 function parsePMT(arrayBuffer: ArrayBuffer, options?: PMTLoaderOptions) {
-  if (options.pmt.raster){
+  if (options && options?.pmt?.raster){
     const blob = new Blob([arrayBuffer], {type: "image/png"});
     const url = URL.createObjectURL(blob);
     // const url = window.URL.createObjectURL(blob);
     return createImageBitmap(blob);
-  } else {
+  } else if (options?.pmt?.tileCompression) {
     const decompressed = fflateDecompress(arrayBuffer, options.pmt.tileCompression)
     const tiledata = ParseMVT(decompressed, options);
     return tiledata;
@@ -85,5 +85,6 @@ function fflateDecompress(
     return decompressSync(new Uint8Array(buf));
   } else {
     throw Error("Compression method not supported");
+
   }
 }

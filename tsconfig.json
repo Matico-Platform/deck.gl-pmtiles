@@ -6,7 +6,8 @@
     "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
-    "noImplicitAny": true,
+    "noImplicitAny": false,
+    "allowJs": true,
     "outDir": "example/public/dist",
     "preserveConstEnums": true,
     "baseUrl": "./src/",
@@ -14,10 +15,16 @@
     "target": "es6",
     "declaration": true,
     "declarationDir": "example/public/dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
   },
   "exclude": [
     "node_modules",
-    "example/public/dist/**/*"
+    "example/public/dist/**/*",
+    "example/*"
   ]
 }
